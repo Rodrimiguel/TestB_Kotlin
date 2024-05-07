@@ -1,3 +1,4 @@
+import android.text.format.DateUtils
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -8,13 +9,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -23,33 +28,53 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.cronometro.ui.theme.CronometroTheme
+import kotlinx.coroutines.delay
 
 @Composable
 fun CronometroView(modifier: Modifier = Modifier) {
-var prendido by remember {
-    mutableStateOf(false)
-}
-
+    var prendido by remember {
+        mutableStateOf(false)
+    }
+    var tiempo by remember {
+        mutableStateOf<Long>(0)
+    }
+    LaunchedEffect(prendido) {
+        while (prendido) {
+            delay(1)
+            tiempo++
+        }
+    }
+    var ultimaVuelta by remember {
+        mutableStateOf<Long>(0)
+    }
+    var vueltas = remember {
+        mutableStateListOf<Long>()
+    }
 
     Column(modifier = modifier) {
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.SpaceAround) {
             Text(
-                text = "00:00:12",
+                text = DateUtils.formatElapsedTime(tiempo),
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally),
                 style = MaterialTheme.typography.titleLarge
             )
             if (prendido) {
                 Row(
-                    modifier = modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
                     Button(
-                        onClick = { /*TODO*/ },
+                        onClick = {
+                            /*TODO*/
+                            var vuelta = tiempo - ultimaVuelta
+                            ultimaVuelta = tiempo
+                            vueltas.add(vuelta)
+                        },
                         modifier = Modifier
                             .height(100.dp)
-                            .aspectRatio(ratio = 1f),
-                        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.tertiary)
+                            .aspectRatio(1f),
+                        colors = ButtonDefaults.buttonColors((MaterialTheme.colorScheme.tertiary))
                     ) {
                         Text(text = "Lap")
                     }
@@ -57,28 +82,32 @@ var prendido by remember {
                     //Spacer(modifier = Modifier.width(190.dp))
 
                     Button(
-                        onClick = { /*Esto debería pasar a FALSE*/
-                                  prendido = false
-                                  }, modifier = Modifier
+                        onClick = { /*Esto deberia Pasar a false*/
+                            prendido = false
+                        }, modifier = Modifier
                             .height(100.dp)
-                            .aspectRatio(ratio = 1f),
+                            .aspectRatio(1f),
                         colors = ButtonDefaults.buttonColors((MaterialTheme.colorScheme.primary))
                     ) {
                         Text(text = "Stop")
                     }
                 }
-
             } else {
                 Row(
-                    modifier = modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
                     Button(
-                        onClick = { /*TODO*/ },
+                        onClick = { /*TODO*/
+                            tiempo = 0
+                            vueltas.clear()
+                            //  vueltas = listOf()
+                            ultimaVuelta = 0
+                        },
                         modifier = Modifier
                             .height(100.dp)
-                            .aspectRatio(ratio = 1f),
-                        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.tertiary)
+                            .aspectRatio(1f),
+                        colors = ButtonDefaults.buttonColors((MaterialTheme.colorScheme.tertiary))
                     ) {
                         Text(text = "Restart")
                     }
@@ -86,31 +115,55 @@ var prendido by remember {
                     //Spacer(modifier = Modifier.width(190.dp))
 
                     Button(
-                        onClick = { /*Esto debería pasar a TRUE*/
-                                    prendido = true
+                        onClick = { /*Esto deberia Pasar a true*/
+                            prendido = true
 
-                                  }, modifier = Modifier
+                        }, modifier = Modifier
                             .height(100.dp)
-                            .aspectRatio(ratio = 1f),
+                            .aspectRatio(1f),
                         colors = ButtonDefaults.buttonColors((MaterialTheme.colorScheme.secondary))
                     ) {
                         Text(text = "Start")
                     }
                 }
-
             }
+
         }
-        Column(
+
+        /*Column(modifier = Modifier
+            .weight(1f)
+            .align(Alignment.CenterHorizontally)) {
+
+            vueltas.forEach(){
+
+                Text(DateUtils.formatElapsedTime(it))
+            }
+        }*/
+
+        LazyColumn(
             modifier = Modifier
                 .weight(1f)
                 .align(Alignment.CenterHorizontally)
         ) {
-            Text(text = "")
+
+            var contador = 1
+
+            items(items = vueltas) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+
+                    Text(text = "Vuelta " + contador++ + ": ")
+                    Text(DateUtils.formatElapsedTime(it))
+                }
+
+            }
 
         }
 
-
     }
+
 }
 
 @Preview(showBackground = true)
